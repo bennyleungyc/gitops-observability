@@ -1,0 +1,127 @@
+name: GitOps Observability CI/CD
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+env:
+  HELM_VERSION: '3.13.0'
+
+jobs:
+  helm-lint:
+    name: Helm Chart Validation
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        chart:
+          - name: crypto-ws-subscriber
+            path: helm_chart/crypto-ws-subscriber
+          - name: binance-ws-subscriber
+            path: helm_chart/binance-ws-subscriber
+          - name: helm-library
+            path: helm_chart/helm-library
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+      
+      - name: Update Helm dependencies
+        if: matrix.chart.name != 'helm-library'
+        run: |
+          helm dependency update ${{ matrix.chart.path }}
+      
+      - name: Lint Helm chart
+        run: |
+          helm lint ${{ matrix.chart.path }} --strict
+      
+      - name: Validate chart templates
+        if: matrix.chart.name != 'helm-library'
+        run: |
+          helm template test-release ${{ matrix.chart.path }} --debug
+      
+      - name: Generate chart report
+        run: |
+          echo "## Helm Chart Report - ${{ matrix.chart.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Chart validation passed" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "${{ matrix.chart.path }}/Chart.yaml" ]; then
+            VERSION=$(grep '^version:' ${{ matrix.chart.path }}/Chart.yaml | awk '{print $2}')
+            echo "- **Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  kubernetes-validate:
+    name: Kubernetes Manifests Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      
+      - name: Validate ArgoCD manifests
+        run: |
+          kubeconform -summary -output json k8s/argocd/*.yaml
+        continue-on-error: true
+      
+      - name: Validate monitoring manifests
+        run: |
+          kubeconform -summary -output json k8s/monitoring/*.yaml
+        continue-on-error: true
+      
+      - name: Validate deployments
+        run: |
+          if [ -d "k8s/deployments" ]; then
+            kubeconform -summary -output json k8s/deployments/*.yaml
+          fi
+        continue-on-error: true
+      
+      - name: Check YAML syntax
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: k8s/
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 120
+                level: warning
+              indentation:
+                spaces: 2
+        continue-on-error: true
+      
+      - name: Generate validation report
+        run: |
+          echo "## Kubernetes Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Manifest validation completed" >> $GITHUB_STEP_SUMMARY
+
+  terraform-validate:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive terraform/
+      
+      - name: Validate Modules
+        run: |
+          cd terraform/modules/iam && terraform init -backend=false && terraform validate
+          cd ../eks && terraform init -backend=false && terraform validate

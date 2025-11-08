@@ -1,0 +1,32 @@
+# Example: Different Depths Per Instrument
+#
+# Demonstrates fine-grained control over order book depth
+#
+# Usage:
+#   python -m src.crypto_com_listener.crypto_listener \
+#     --config src/crypto_com_listener/config/examples/custom-depths.yml
+
+exchange: crypto.com
+
+instruments:
+  # Top-of-book only for quick spreads
+  - instrument: BTC_USDT
+    depth: 5
+    enabled: true
+  
+  # Medium depth for analysis
+  - instrument: ETH_USDT
+    depth: 10
+    enabled: true
+  
+  # Deep orderbook for liquidity analysis
+  - instrument: BNB_USDT
+    depth: 20
+    enabled: true
+
+logging:
+  level: INFO
+
+server:
+  port: 8001
+

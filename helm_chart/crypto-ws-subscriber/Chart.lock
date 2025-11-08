@@ -1,0 +1,6 @@
+dependencies:
+- name: helm-library
+  repository: file://../helm-library
+  version: 1.0.0
+digest: sha256:5f092a97103b7b45dfa455b20febbd4df72f9c607cf635c19ddfc9b145579297
+generated: "2025-10-19T00:08:01.921913+08:00"

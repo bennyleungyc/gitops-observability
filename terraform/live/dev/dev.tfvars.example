@@ -1,0 +1,13 @@
+# terraform.tfvars  (or dev.tfvars, prod.tfvars …)
+eks_cluster_admins = [
+  {
+    principal_arn = "example_arm"
+    user_name     = "example_user"
+  }
+]
+
+aws_subnet = {
+  az1: {id = "subnet-1"},
+  az2: {id = "subnet-2"},
+  az3: {id = "subnet-3"}
+}

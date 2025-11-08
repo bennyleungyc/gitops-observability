@@ -1,0 +1,13 @@
+# Production Environment Overrides for Crypto.com Listener
+
+# Override logging for production
+logging:
+  level: WARNING
+  format: json
+
+# More aggressive reconnection for production
+connection:
+  max_retries: 10
+  retry_delay: 10
+  initial_delay: 2.0  # More conservative for rate limits
+

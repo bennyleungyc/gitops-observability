@@ -1,0 +1,82 @@
+name: Production Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version to deploy (image tag)'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up kubectl (if using Kubernetes)
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Log deployment info
+        run: |
+          echo "## Deployment Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Deploy with Docker Compose (example)
+        run: |
+          echo "Deployment steps would go here"
+          echo "Example: ssh to production server and run docker compose pull && docker compose up -d"
+          
+          # For demonstration purposes
+          cat > deploy-info.txt <<EOF
+          Deployment Configuration
+          ========================
+          Environment: ${{ inputs.environment }}
+          Version: ${{ inputs.version }}
+          Images:
+            - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/binance-ws:${{ inputs.version }}
+            - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/crypto-ws:${{ inputs.version }}
+          
+          Deployment Command:
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+          EOF
+          
+          cat deploy-info.txt
+      
+      - name: Health check after deployment
+        run: |
+          echo "Performing health checks..."
+          echo "✅ Would check: http://production-server:8001/health"
+          echo "✅ Would check: http://production-server:8002/health"
+      
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to ${{ inputs.environment }} completed successfully"
+          else
+            echo "❌ Deployment to ${{ inputs.environment }} failed"
+          fi
+

@@ -1,0 +1,23 @@
+# Docker Compose override for development
+# This file is automatically loaded by docker-compose
+
+version: '3.8'
+
+services:
+  binance:
+    # Override for development
+    environment:
+      - CONFIG_ENV=dev
+    # Mount source code for development (optional)
+    # volumes:
+    #   - ./src:/app/src:ro
+    #   - ./src/binance_listener/config:/app/src/binance_listener/config:ro
+
+  crypto:
+    # Override for development
+    environment:
+      - CONFIG_ENV=dev
+    # Mount source code for development (optional)
+    # volumes:
+    #   - ./src:/app/src:ro
+    #   - ./src/crypto_com_listener/config:/app/src/crypto_com_listener/config:ro

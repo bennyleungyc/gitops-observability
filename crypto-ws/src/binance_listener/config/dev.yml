@@ -1,0 +1,16 @@
+# Development Environment Overrides for Binance Listener
+
+# Verbose logging for development
+logging:
+  level: DEBUG
+  format: text
+
+# Multiple symbols for development testing
+symbols:
+  - symbol: btcusdt
+    depth: 5
+    enabled: true
+  - symbol: solusdt
+    depth: 5
+    enabled: true
+

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: binance-ws-subscriber
+version: 1.0.0
+description: Makret data websocket subscriber via Binance
+keywords:
+  - Market data
+appVersion: "1.0.0"
+annotations:
+  example: marketData
+dependencies:
+- name: helm-library
+  version: "1.0.0"
+  repository: "file://../helm-library"

@@ -1,0 +1,123 @@
+name: Security Scanning
+
+on:
+  schedule:
+    # Run security scans every day at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+      
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        listener: [binance, crypto]
+        include:
+          - listener: binance
+            module: src.binance_listener.binance_listener
+          - listener: crypto
+            module: src.crypto_com_listener.crypto_listener
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build image for scanning
+        run: |
+          docker build \
+            --build-arg LISTENER_MODULE=${{ matrix.module }} \
+            -t ${{ matrix.listener }}-ws:scan \
+            -f dockerfile \
+            .
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ matrix.listener }}-ws:scan'
+          format: 'sarif'
+          output: 'trivy-${{ matrix.listener }}.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+      
+      - name: Upload Trivy results to Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-${{ matrix.listener }}.sarif'
+          category: 'container-${{ matrix.listener }}'
+      
+      - name: Run Trivy in table mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ matrix.listener }}-ws:scan'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+

@@ -1,0 +1,82 @@
+# Build configuration for WebSocket exchange listeners
+# This file defines all available listeners and their build parameters
+
+# Global build settings
+build:
+  python_version: "3.11-slim"
+  registry: ""  # e.g., "gcr.io/myproject" or "docker.io/username"
+  tag_suffix: ""  # e.g., "-v1.0.0"
+  
+# Listener definitions
+listeners:
+  binance:
+    module: src.binance_listener.binance_listener
+    image: binance-ws
+    port: 8002
+    description: "Binance WebSocket market data listener"
+    environment_vars:
+      - BINANCE_SYMBOLS
+      - BINANCE_DEPTH
+      - BINANCE_WS_ENDPOINT
+    config_examples:
+      - "src/binance_listener/config/examples/multi-symbol.yml"
+      - "src/binance_listener/config/examples/high-frequency.yml"
+      - "src/binance_listener/config/examples/custom-depths.yml"
+    
+  crypto:
+    module: src.crypto_com_listener.crypto_listener
+    image: crypto-ws
+    port: 8001
+    description: "Crypto.com WebSocket market data listener"
+    environment_vars:
+      - CRYPTO_INSTRUMENTS
+      - CRYPTO_DEPTH
+      - CRYPTO_WS_ENDPOINT
+    config_examples:
+      - "src/crypto_com_listener/config/examples/multi-instrument.yml"
+      - "src/crypto_com_listener/config/examples/custom-depths.yml"
+
+# Docker Compose configurations
+compose:
+  development:
+    file: "docker-compose.yml"
+    override: "docker-compose.override.yml"
+    description: "Local development setup"
+    
+  production:
+    file: "docker-compose.yml"
+    override: "docker-compose.prod.yml"
+    description: "Production deployment"
+    
+  custom:
+    file: "docker-compose.yml"
+    override: "docker-compose.custom.yml"
+    description: "Custom configuration"
+
+# Build targets
+targets:
+  all:
+    listeners: ["binance", "crypto"]
+    description: "Build all listeners"
+    
+  binance-only:
+    listeners: ["binance"]
+    description: "Build only Binance listener"
+    
+  crypto-only:
+    listeners: ["crypto"]
+    description: "Build only Crypto.com listener"
+
+# Registry configurations (optional)
+registries:
+  dockerhub:
+    url: "docker.io"
+    namespace: "your-username"
+    
+  gcr:
+    url: "gcr.io"
+    project: "your-project"
+    
+  ecr:
+    url: "your-account.dkr.ecr.region.amazonaws.com"
+    region: "us-west-2"

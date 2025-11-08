@@ -1,0 +1,38 @@
+# Example: Multiple Instruments with Different Depths
+#
+# Usage:
+#   python -m src.crypto_com_listener.crypto_listener \
+#     --config src/crypto_com_listener/config/examples/multi-instrument.yml
+
+exchange: crypto.com
+
+instruments:
+  # Major pairs - high frequency, shallow depth
+  - instrument: BTC_USDT
+    depth: 5
+    enabled: true
+  
+  - instrument: ETH_USDT
+    depth: 5
+    enabled: true
+  
+  # Mid-tier pairs - medium depth
+  - instrument: BNB_USDT
+    depth: 10
+    enabled: true
+  
+  - instrument: SOL_USDT
+    depth: 10
+    enabled: true
+  
+  # Research pairs - deep orderbook
+  - instrument: ADA_USDT
+    depth: 20
+    enabled: false  # Can disable without removing
+
+server:
+  port: 8001
+
+logging:
+  level: INFO
+

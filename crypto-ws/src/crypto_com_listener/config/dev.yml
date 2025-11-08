@@ -1,0 +1,16 @@
+# Development Environment Overrides for Crypto.com Listener
+
+# Verbose logging for development
+logging:
+  level: DEBUG
+  format: text
+
+# Multiple instruments for development testing
+instruments:
+  - instrument: BTC_USDT
+    depth: 150
+    enabled: true
+  - instrument: SOL_USDT
+    depth: 150
+    enabled: true
+
