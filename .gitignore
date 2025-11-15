@@ -35,3 +35,11 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+init_argo.sh
+scripts/local-*
+
+venv/
+.idea/
+__pycache__/
+.pytest_cache/

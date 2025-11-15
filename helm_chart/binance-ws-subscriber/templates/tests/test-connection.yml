@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-test-connection"
+  labels:
+    {{- include "custom-lib.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          # Fetch the health JSON and check HTTP status code
+          response=$(curl -f '{{ include "custom-lib.fullname" . }}:{{ .Values.service.targetPort }}/health')
+          # Check if the status field is "healthy"
+          echo "$response" | grep -q '"status": "healthy"'
+          if [ $? -eq 0 ]; then
+            exit 0
+          else
+            exit 1
+          fi
+  restartPolicy: Never
