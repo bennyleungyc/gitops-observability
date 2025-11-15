@@ -1,0 +1,18 @@
+# Local Development Configuration for Crypto.com Listener
+
+# Verbose logging
+logging:
+  level: DEBUG
+  format: text
+  file:
+    enabled: false  # Disable file logging for local testing
+
+# Test with multiple instruments
+instruments:
+  - instrument: BTC_USDT
+    depth: 150
+    enabled: true
+  - instrument: SOL_USDT
+    depth: 150
+    enabled: true
+

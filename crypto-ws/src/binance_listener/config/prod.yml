@@ -1,0 +1,12 @@
+# Production Environment Overrides for Binance Listener
+
+# Override logging for production
+logging:
+  level: WARNING
+  format: json
+
+# More aggressive reconnection for production
+connection:
+  max_retries: 10
+  retry_delay: 10
+

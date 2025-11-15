@@ -1,0 +1,32 @@
+# Example: High-Frequency Trading Configuration
+#
+# Optimized for minimal latency and shallow order book depth
+#
+# Usage:
+#   python -m src.binance_listener.binance_listener \
+#     --config src/binance_listener/config/examples/high-frequency.yml
+
+exchange: binance
+
+symbols:
+  - symbol: btcusdt
+    depth: 5
+    enabled: true
+  
+  - symbol: ethusdt
+    depth: 5
+    enabled: true
+
+# Aggressive reconnection
+connection:
+  max_retries: 20
+  retry_delay: 1
+
+# Minimal logging for performance
+logging:
+  level: ERROR
+  format: json
+
+server:
+  port: 8002
+

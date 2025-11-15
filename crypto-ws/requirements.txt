@@ -1,0 +1,9 @@
+# Core dependencies
+aiohttp>=3.9.0
+websockets>=12.0
+psutil>=5.9.0
+PyYAML>=6.0
+redis>=4.5.0
+
+# Testing (optional)
+pytest>=7.4.0

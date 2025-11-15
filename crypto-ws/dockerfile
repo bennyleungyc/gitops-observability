@@ -1,0 +1,58 @@
+# Multi-stage Dockerfile for WebSocket Exchange Listeners
+# Supports all exchange listeners through build-time arguments
+
+# Stage 1: Builder (for dependencies)
+ARG PYTHON_VERSION=3.11-slim
+FROM python:${PYTHON_VERSION} as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    libffi-dev \
+    libssl-dev \
+    telnet \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Stage 2: Runtime (minimal image)
+FROM python:${PYTHON_VERSION}
+
+# Security: Create non-root user
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app /app/logs && \
+    chown -R appuser:appuser /app
+
+WORKDIR /app
+
+# Copy installed packages from builder stage
+COPY --from=builder /root/.local /home/appuser/.local
+
+# Copy source code
+COPY src/ ./src/
+
+# Security: Switch to non-root user
+USER appuser
+
+# Add .local/bin to PATH for installed packages
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# Build-time argument for listener module
+ARG LISTENER_MODULE
+ENV LISTENER_MODULE=${LISTENER_MODULE}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=5)" || exit 1
+
+# Expose HTTP server port
+EXPOSE 8000
+
+# Run the specified listener module
+CMD python -m ${LISTENER_MODULE}

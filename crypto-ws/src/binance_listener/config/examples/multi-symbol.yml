@@ -1,0 +1,38 @@
+# Example: Multiple Symbols with Different Depths
+#
+# Usage:
+#   python -m src.binance_listener.binance_listener \
+#     --config src/binance_listener/config/examples/multi-symbol.yml
+
+exchange: binance
+
+symbols:
+  # Major pairs - high frequency, shallow depth
+  - symbol: btcusdt
+    depth: 5
+    enabled: true
+  
+  - symbol: ethusdt
+    depth: 5
+    enabled: true
+  
+  # Mid-tier pairs - medium depth
+  - symbol: bnbusdt
+    depth: 10
+    enabled: true
+  
+  - symbol: solusdt
+    depth: 10
+    enabled: true
+  
+  # Research pairs - deep orderbook
+  - symbol: adausdt
+    depth: 20
+    enabled: false  # Can disable without removing
+
+server:
+  port: 8002
+
+logging:
+  level: INFO
+

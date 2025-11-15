@@ -1,0 +1,32 @@
+# Example: Different Depths Per Symbol
+#
+# Demonstrates fine-grained control over order book depth
+#
+# Usage:
+#   python -m src.binance_listener.binance_listener \
+#     --config src/binance_listener/config/examples/custom-depths.yml
+
+exchange: binance
+
+symbols:
+  # Top-of-book only for quick spreads
+  - symbol: btcusdt
+    depth: 5
+    enabled: true
+  
+  # Medium depth for analysis
+  - symbol: ethusdt
+    depth: 10
+    enabled: true
+  
+  # Deep orderbook for liquidity analysis
+  - symbol: bnbusdt
+    depth: 20
+    enabled: true
+
+logging:
+  level: INFO
+
+server:
+  port: 8002
+

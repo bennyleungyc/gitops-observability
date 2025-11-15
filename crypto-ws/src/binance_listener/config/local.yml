@@ -1,0 +1,18 @@
+# Local Development Configuration for Binance Listener
+
+# Verbose logging
+logging:
+  level: DEBUG
+  format: text
+  file:
+    enabled: false  # Disable file logging for local testing
+
+# Test with multiple symbols
+symbols:
+  - symbol: btcusdt
+    depth: 5
+    enabled: true
+  - symbol: solusdt
+    depth: 5
+    enabled: true
+

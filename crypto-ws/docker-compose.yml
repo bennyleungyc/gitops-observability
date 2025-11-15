@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  binance:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        LISTENER_MODULE: src.binance_listener.binance_listener
+    image: bennyleungyc/binance-ws-subscriber:${VERSION}
+    container_name: binance-ws-subscriber
+    ports:
+      - "8000:8000"
+    environment:
+      - CONFIG_ENV=dev
+    restart: unless-stopped
+    volumes:
+      - binance-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - websocket-network
+
+  crypto:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        LISTENER_MODULE: src.crypto_com_listener.crypto_listener
+    image: bennyleungyc/crypto-ws-subscriber:${VERSION}
+    container_name: crypto-ws-subscriber
+    ports:
+      - "8001:8001"
+    environment:
+      - CONFIG_ENV=dev
+    restart: unless-stopped
+    volumes:
+      - crypto-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - websocket-network
+
+networks:
+  websocket-network:
+    driver: bridge
+
+# Persistent volumes for logs
+volumes:
+  binance-logs:
+    driver: local
+  crypto-logs:
+    driver: local
