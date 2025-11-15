@@ -10,9 +10,9 @@ variable "environment" {
 
 variable "eks_tags" {
   description = "AWS region"
-  type        = object({
+  type = object({
     Purpose = string
   })
-  default     =  {"Purpose": "EKSCluster"}
+  default = { "Purpose" : "EKSCluster" }
 }
 

@@ -1,11 +1,11 @@
 resource "aws_eks_cluster" "example" {
-  name = "${var.environment}-${var.eks_cluster_name}-eks-cluster"
+  name     = "${var.environment}-${var.eks_cluster_name}-eks-cluster"
   role_arn = var.eks_cluster_role.arn
   access_config {
     authentication_mode = "API_AND_CONFIG_MAP"
   }
-//  role_arn = aws_iam_role.cluster.arn
-  version  = "1.30"
+  //  role_arn = aws_iam_role.cluster.arn
+  version = "1.30"
 
   vpc_config {
     endpoint_private_access = true
@@ -16,7 +16,7 @@ resource "aws_eks_cluster" "example" {
       var.aws_subnet.az2.id,
       var.aws_subnet.az3.id,
     ]
-    public_access_cidrs     = ["0.0.0.0/0"]
+    public_access_cidrs = ["0.0.0.0/0"]
   }
 
 }
@@ -26,12 +26,12 @@ resource "aws_eks_node_group" "example_node_group" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "example_node_group"
   node_role_arn   = var.eks_node_role.arn
-  instance_types = ["t3.medium"]
+  instance_types  = ["t3.medium"]
   subnet_ids = [
-      var.aws_subnet.az1.id,
-      var.aws_subnet.az2.id,
-      var.aws_subnet.az3.id,
-    ]
+    var.aws_subnet.az1.id,
+    var.aws_subnet.az2.id,
+    var.aws_subnet.az3.id,
+  ]
 
   scaling_config {
     desired_size = 2
@@ -43,8 +43,8 @@ resource "aws_eks_node_group" "example_node_group" {
     max_unavailable = 1
   }
   depends_on = [
-      null_resource.wait_for_cni,
-      null_resource.wait_for_cluster,
+    null_resource.wait_for_cni,
+    null_resource.wait_for_cluster,
   ]
 }
 
