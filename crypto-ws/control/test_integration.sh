@@ -49,33 +49,33 @@ echo ""
 docker compose ps
 
 # Step 4: Test Binance service
-# echo ""
-# echo -e "${BLUE}Step 4: Testing Binance service...${NC}"
-# if curl -f http://localhost:8002/health 2>/dev/null; then
-#     echo -e "${GREEN}✅ Binance service is healthy${NC}"
-# else
-#     echo -e "${RED}❌ Binance service health check failed${NC}"
-#     echo "Binance logs:"
-#     docker compose logs binance
-#     exit 1
-# fi
+echo ""
+echo -e "${BLUE}Step 4: Testing Binance service...${NC}"
+if curl -f http://localhost:8000/health 2>/dev/null; then
+    echo -e "Binance service is healthy${NC}"
+else
+    echo -e "$Binance service health check failed${NC}"
+    echo "Binance logs:"
+    docker compose logs binance
+    exit 1
+fi
 
-# # Step 5: Test Crypto.com service
-# echo ""
-# echo -e "${BLUE}Step 5: Testing Crypto.com service...${NC}"
-# if curl -f http://localhost:8001/health 2>/dev/null; then
-#     echo -e "${GREEN}✅ Crypto.com service is healthy${NC}"
-# else
-#     echo -e "${RED}❌ Crypto.com service health check failed${NC}"
-#     echo "Crypto logs:"
-#     docker compose logs crypto
-#     exit 1
-# fi
+# Step 5: Test Crypto.com service
+echo ""
+echo -e "${BLUE}Step 5: Testing Crypto.com service...${NC}"
+if curl -f http://localhost:8001/health 2>/dev/null; then
+    echo -e " Crypto.com service is healthy${NC}"
+else
+    echo -e "Crypto.com service health check failed${NC}"
+    echo "Crypto logs:"
+    docker compose logs crypto
+    exit 1
+fi
 
 # Success
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}✅ All integration tests passed!${NC}"
+echo -e "${GREEN} All integration tests passed!${NC}"
 echo -e "${GREEN}========================================${NC}"
 
 echo ""

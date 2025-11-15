@@ -5,7 +5,7 @@ resource "aws_eks_cluster" "example" {
     authentication_mode = "API_AND_CONFIG_MAP"
   }
 //  role_arn = aws_iam_role.cluster.arn
-  version  = "1.34"
+  version  = "1.30"
 
   vpc_config {
     endpoint_private_access = true
@@ -21,16 +21,6 @@ resource "aws_eks_cluster" "example" {
 
 }
 
-resource "aws_eks_addon" "vpc_cni" {
-  cluster_name      = aws_eks_cluster.example.name
-  addon_name        = "vpc-cni"
-  addon_version     = "v1.18.1-eksbuild.1"  # Optional: pin compatible version
-  resolve_conflicts_on_update = "PRESERVE"
-
-  depends_on = [
-    null_resource.wait_for_cluster
-  ]
-}
 
 resource "aws_eks_node_group" "example_node_group" {
   cluster_name    = aws_eks_cluster.example.name
@@ -53,7 +43,6 @@ resource "aws_eks_node_group" "example_node_group" {
     max_unavailable = 1
   }
   depends_on = [
-      aws_eks_addon.vpc_cni,
       null_resource.wait_for_cni,
       null_resource.wait_for_cluster,
   ]
@@ -69,8 +58,6 @@ resource "null_resource" "wait_for_cluster" {
 }
 
 resource "null_resource" "wait_for_cni" {
-  depends_on = [aws_eks_addon.vpc_cni]
-
   provisioner "local-exec" {
     command = <<EOF
       echo "Waiting for vpc-cni addon to be ACTIVE..."

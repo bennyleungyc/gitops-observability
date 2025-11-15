@@ -136,8 +136,8 @@ terraform -chdir=terraform/modules/eks init
 
 # Initialize and apply dev environment
 terraform -chdir=terraform/live/dev init
-terraform -chdir=terraform/live/dev plan
-terraform -chdir=terraform/live/dev apply
+terraform -chdir=terraform/live/dev plan -var-file="dev.tfvars"
+terraform -chdir=terraform/live/dev apply -var-file="dev.tfvars"
 ```
 ####  2.1 Configure kubectl for EKS
 
@@ -146,6 +146,9 @@ After Terraform creates the EKS cluster, update your kubeconfig:
 ```bash
 aws eks update-kubeconfig  --name dev-argocd-eks-cluster --region ap-southeast-1
 ```
+#### 2.2 Terraform state uploaded to S3 for collaboration
+Terraform state is stored remotely in S3 to enable team collaboration and prevent state conflicts. For easier setup, S3 creation is manually created. One of potential improvements is to provision S3 bucket via Terraform.
+
 
 ### 3. Deploy ArgoCD
 

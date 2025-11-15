@@ -169,9 +169,6 @@ class BinanceListener(BaseExchangeListener):
             "received_at": time.time()
         }
 
-        # Store orderbook data to Redis if enabled
-        asyncio.create_task(self._store_orderbook_to_redis(self.latest_market_data))
-
         self.logger.debug(
             f"{stream} update_id={last_update_id} best_bid={best_bid} best_ask={best_ask} "
             f"bids={len(bids)} asks={len(asks)}"

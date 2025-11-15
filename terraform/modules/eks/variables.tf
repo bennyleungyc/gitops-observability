@@ -37,3 +37,12 @@ variable "region" {
   description = "Region"
   type        = string
 }
+
+variable "eks_cluster_admins" {
+  type = list(object({
+    principal_arn = string
+    user_name     = string
+  }))
+  description = "List of EKS cluster administrators"
+  default     = []
+}

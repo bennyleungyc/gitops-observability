@@ -23,3 +23,18 @@ variable "eks_cluster_admins" {
   }))
   default = []
 }
+
+variable "aws_subnet" {
+  type = object({
+    az1 = object({
+      id = string
+    })
+    az2 = object({
+      id = string
+    })
+    az3 = object({
+      id = string
+    })
+  })
+  description = "Subnet IDs for availability zones"
+}

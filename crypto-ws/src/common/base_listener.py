@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 import psutil
-import redis.asyncio as redis
 from aiohttp import web
 
 from src.common.logger import setup_logger
@@ -35,7 +34,6 @@ class BaseExchangeListener(ABC):
         }
         self.latest_market_data: Optional[Dict[str, Any]] = None
         self.logger: Optional[logging.Logger] = None
-        self.redis_client: Optional[redis.Redis] = None
 
     @abstractmethod
     def get_exchange_name(self) -> str:
@@ -73,73 +71,6 @@ class BaseExchangeListener(ABC):
         self.connection_status["last_message_time"] = time.time()
         self.connection_status["message_count"] += 1
 
-    async def _initialize_redis(self, config: Dict[str, Any]) -> None:
-        """Initialize Redis connection. Required for operation."""
-        redis_config = config.get("redis", {})
-        
-        host = redis_config.get("host", "localhost")
-        port = redis_config.get("port", 6379)
-        db = redis_config.get("db", 0)
-        password = redis_config.get("password")
-        
-        self.redis_client = redis.Redis(
-            host=host,
-            port=port,
-            db=db,
-            password=password,
-            decode_responses=True,
-            socket_connect_timeout=5,
-            socket_timeout=5
-        )
-        
-        # Test connection
-        await self.redis_client.ping()
-        
-        if self.logger:
-            self.logger.info(f"Redis connected to {host}:{port}")
-        else:
-            print(f"Redis connected to {host}:{port}")
-
-    async def _store_orderbook_to_redis(self, orderbook_data: Dict[str, Any]) -> None:
-        """Store orderbook data to Redis."""
-        if not self.redis_client:
-            return
-
-        try:
-            exchange = self.get_exchange_name()
-            symbol = orderbook_data.get("symbol", "unknown")
-            timestamp = orderbook_data.get("timestamp", int(time.time() * 1000))
-            
-            # Create Redis key with exchange, symbol, and timestamp
-            redis_key = f"orderbook:{exchange}:{symbol}:{timestamp}"
-            orderbook_json = json.dumps(orderbook_data)
-            
-            # Store the orderbook data as JSON
-            # setex(key, time, value) - note the argument order
-            await self.redis_client.setex(redis_key, 3600, orderbook_json)
-            
-            # Also store latest orderbook for quick access
-            latest_key = f"orderbook:{exchange}:{symbol}:latest"
-            await self.redis_client.setex(latest_key, 60, orderbook_json)
-            
-            # Log successful write
-            if self.logger:
-                self.logger.debug(f"Stored orderbook to Redis: {latest_key}")
-            
-        except Exception as e:
-            if self.logger:
-                self.logger.error(f"Failed to store orderbook to Redis: {e}")
-
-    async def _cleanup_redis(self) -> None:
-        """Close Redis connection."""
-        if self.redis_client:
-            try:
-                await self.redis_client.close()
-                if self.logger:
-                    self.logger.info("Redis connection closed")
-            except Exception as e:
-                if self.logger:
-                    self.logger.error(f"Error closing Redis connection: {e}")
 
     async def handle_health(self, request: web.Request) -> web.Response:
         """Comprehensive health check endpoint."""
@@ -170,17 +101,7 @@ class BaseExchangeListener(ABC):
             memory = None
             disk = None
 
-        # Check Redis health (required)
-        redis_healthy = False
-        if self.redis_client:
-            try:
-                await self.redis_client.ping()
-                redis_healthy = True
-            except Exception:
-                redis_healthy = False
-
-        # Include Redis in overall health check
-        overall_healthy = ws_healthy and system_healthy and redis_healthy
+        overall_healthy = ws_healthy and system_healthy 
 
         health_data = {
             "status": "healthy" if overall_healthy else "unhealthy",
@@ -194,10 +115,6 @@ class BaseExchangeListener(ABC):
                 "message_count": self.connection_status["message_count"],
                 "error_count": self.connection_status["error_count"],
                 "last_error": self.connection_status["last_error"]
-            },
-            "redis": {
-                "connected": redis_healthy,
-                "healthy": redis_healthy
             },
             "system": {
                 "healthy": system_healthy,
@@ -250,9 +167,7 @@ class BaseExchangeListener(ABC):
 
     async def run_server_and_ws(self) -> None:
         """Run HTTP server and WebSocket connection."""
-        # Initialize Redis first
         config = self.get_default_config()
-        # await self._initialize_redis(config)
         
         app = self.create_app()
         runner = web.AppRunner(app)
@@ -279,7 +194,6 @@ class BaseExchangeListener(ABC):
             if self.logger:
                 self.logger.info("WebSocket task cancelled")
         finally:
-            await self._cleanup_redis()
             await runner.cleanup()
 
     def _install_signal_handlers(self, loop: asyncio.AbstractEventLoop) -> None:

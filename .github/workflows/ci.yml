@@ -108,3 +108,20 @@ jobs:
           echo "## Kubernetes Validation Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Manifest validation completed" >> $GITHUB_STEP_SUMMARY
+
+  terraform-validate:
+    name: Terraform Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive terraform/
+      
+      - name: Validate Modules
+        run: |
+          cd terraform/modules/iam && terraform init -backend=false && terraform validate
+          cd ../eks && terraform init -backend=false && terraform validate
