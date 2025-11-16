@@ -118,8 +118,7 @@ gitops-observability/
 │   │   └── common/            # Shared utilities (logger, config loader, base classes)
 │   ├── control/               # Build and deployment scripts
 │   ├── tests/                 # Unit and integration tests
-│   └── docker-compose*.yml    # Docker compose configurations (dev, prod)
-└── init_argo.sh                # ArgoCD initialization script
+|   └── docker-compose*.yml    # Docker compose configurations (dev, prod)
 ```
 
 ## Prerequisites
