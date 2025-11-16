@@ -96,18 +96,30 @@ Crypto-ws is attached as sample application that listens to real-time market dat
 
 ```
 gitops-observability/
-├── terraform/              # Infrastructure as Code
-│   ├── modules/           # Reusable Terraform modules
-│   │   ├── eks/          # EKS cluster configuration
-│   │   └── iam/          # IAM roles and policies
-│   └── live/             # Environment-specific configs
-│       ├── dev/          # Development environment
-│       └── prod/         # Production environment
-├── k8s/                   # Kubernetes manifests
-│   ├── argocd/           # ArgoCD installation & applications
-│   │   └── applications/ # ArgoCD Application CRDs
-│   └── monitoring/       # Prometheus & Grafana stack
-└── crypto-ws/            # Sample cryptocurrency websocket application
+├── terraform/                    # Infrastructure as Code
+│   ├── global/                  # Global/shared Terraform resources
+│   ├── modules/                 # Reusable Terraform modules
+│   │   ├── eks/                # EKS cluster configuration
+│   │   └── iam/                # IAM roles and policies
+│   └── live/                   # Environment-specific configs
+│       ├── dev/                # Development environment
+│       └── prod/               # Production environment
+├── k8s/                         # Kubernetes manifests
+│   ├── argocd/                 # ArgoCD installation (CRDs, services, deployments)
+│   └── monitoring/             # Prometheus & Grafana stack
+├── helm_chart/                  # Helm charts for application deployment
+│   ├── binance-ws-subscriber/  # Binance WebSocket subscriber chart
+│   ├── crypto-ws-subscriber/   # Crypto.com WebSocket subscriber chart
+│   └── helm-library/           # Shared Helm templates library
+├── crypto-ws/                   # Sample cryptocurrency websocket application
+│   ├── src/                    # Python source code
+│   │   ├── binance_listener/  # Binance WebSocket listener implementation
+│   │   ├── crypto_com_listener/ # Crypto.com WebSocket listener implementation
+│   │   └── common/            # Shared utilities (logger, config loader, base classes)
+│   ├── control/               # Build and deployment scripts
+│   ├── tests/                 # Unit and integration tests
+│   └── docker-compose*.yml    # Docker compose configurations (dev, prod)
+└── init_argo.sh                # ArgoCD initialization script
 ```
 
 ## Prerequisites
