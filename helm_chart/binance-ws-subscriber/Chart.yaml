@@ -4,7 +4,7 @@ version: 1.0.0
 description: Makret data websocket subscriber via Binance
 keywords:
   - Market data
-appVersion: "1.0.0"
+appVersion: "1.1.1"
 annotations:
   example: marketData
 dependencies:
