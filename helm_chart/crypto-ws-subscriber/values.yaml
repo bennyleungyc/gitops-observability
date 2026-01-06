@@ -9,7 +9,7 @@ strategy:
 
 image:
   repository: bennyleungyc/crypto-ws-subscriber
-  tag: "1.0.3"
+  tag: "1.0.2"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: 
